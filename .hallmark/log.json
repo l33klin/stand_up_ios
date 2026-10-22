@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-10-22",
+    "scope": "app",
+    "genre": "modern-minimal",
+    "macrostructure": "Workbench",
+    "theme": "Cobalt (native adaptation)",
+    "enrichment": "none; functional progress ring only",
+    "brief": "Simpler modern standing-habit app: today, history, devices, settings",
+    "adaptation": "Shared Theme.swift native tokens, SF/PingFang, native navigation and controls; no web-only marketing or code demo elements."
+  },
+  {
+    "date": "2026-10-22",
     "genre": "modern-minimal",
     "macrostructure": "Stat-Led",
     "theme": "Coral",

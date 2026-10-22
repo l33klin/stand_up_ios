@@ -1,0 +1,191 @@
+{
+  "date": "2026-10-22",
+  "scope": "native iOS UI redesign",
+  "critique": {
+    "philosophy": 4,
+    "hierarchy": 5,
+    "execution": 4,
+    "specificity": 5,
+    "restraint": 5,
+    "variety": 4
+  },
+  "layout_checks": [
+    {
+      "height": 720,
+      "horizontal_overflow": [],
+      "name": "today-320",
+      "width": 320
+    },
+    {
+      "height": 720,
+      "horizontal_overflow": [],
+      "name": "history-320",
+      "width": 320
+    },
+    {
+      "height": 720,
+      "horizontal_overflow": [],
+      "name": "devices-320",
+      "width": 320
+    },
+    {
+      "height": 720,
+      "horizontal_overflow": [],
+      "name": "settings-320",
+      "width": 320
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "today-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "history-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "devices-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "settings-375",
+      "width": 375
+    },
+    {
+      "height": 896,
+      "horizontal_overflow": [],
+      "name": "today-414",
+      "width": 414
+    },
+    {
+      "height": 896,
+      "horizontal_overflow": [],
+      "name": "history-414",
+      "width": 414
+    },
+    {
+      "height": 896,
+      "horizontal_overflow": [],
+      "name": "devices-414",
+      "width": 414
+    },
+    {
+      "height": 896,
+      "horizontal_overflow": [],
+      "name": "settings-414",
+      "width": 414
+    },
+    {
+      "height": 1024,
+      "horizontal_overflow": [],
+      "name": "today-768",
+      "width": 768
+    },
+    {
+      "height": 1024,
+      "horizontal_overflow": [],
+      "name": "history-768",
+      "width": 768
+    },
+    {
+      "height": 1024,
+      "horizontal_overflow": [],
+      "name": "devices-768",
+      "width": 768
+    },
+    {
+      "height": 1024,
+      "horizontal_overflow": [],
+      "name": "settings-768",
+      "width": 768
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "demo-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "invalid-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "history-sample-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "day-sample-375",
+      "width": 375
+    },
+    {
+      "height": 720,
+      "horizontal_overflow": [],
+      "name": "distance-320",
+      "width": 320
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "calibration-375",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "today-large-text",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "settings-large-text",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "devices-large-text",
+      "width": 375
+    },
+    {
+      "height": 812,
+      "horizontal_overflow": [],
+      "name": "history-large-text",
+      "width": 375
+    }
+  ],
+  "color_contrast": "source token pairs pass WCAG AA; pressed primary uses darker token",
+  "rendering": "Mac Catalyst; standard-range UIKit snapshots at 2x; no fabricated device frames",
+  "fixtures": "Sample history is injected only in the temporary capture app, never in production or user defaults.",
+  "checks": [
+    "native navigation and SF Symbols",
+    "no decorative animation or gradients",
+    "no nested card stacks",
+    "single-line primary actions; vertical CTA arrangement at accessibility sizes",
+    "default, demo, invalid reading, empty and sample history states",
+    "all controls retain existing model callbacks; inactive calibration uses native disabled state"
+  ],
+  "pending": [
+    "iPhone touch interaction",
+    "VoiceOver manual verification",
+    "real BLE and background wake hardware tests"
+  ],
+  "native_adaptations": [
+    "Theme.swift is the native token export; CSS exports do not apply.",
+    "System SF/PingFang and native UI focus/navigation replace web font and browser requirements.",
+    "No marketing enrichment or fake chrome."
+  ]
+}

@@ -10,6 +10,7 @@
     <key>CFBundleVersion</key><string>1</string>
     <key>LSRequiresIPhoneOS</key><true/>
     <key>NSBluetoothAlwaysUsageDescription</key><string>用于扫描和连接 StandUp 升降台测距设备，读取台面间距并识别坐站高度。</string>
+    <key>UIBackgroundModes</key><array><string>bluetooth-central</string></array>
     <key>UILaunchScreen</key><dict/>
     <key>UIApplicationSceneManifest</key><dict>
         <key>UIApplicationSupportsMultipleScenes</key><false/>

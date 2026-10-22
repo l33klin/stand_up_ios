@@ -42,6 +42,25 @@ final class StandUpCoreTests: XCTestCase {
         XCTAssertTrue(sequence.accept(3))
     }
 
+    func testMeasuredIntervalHandlesUptimeWrapAndUsesShorterClock() throws {
+        XCTAssertEqual(try XCTUnwrap(MeasurementContinuity.interval(previousUptime: UInt32.max - 124, uptime: 125,
+                                                                   previousReceipt: 10, receipt: 10.25)), 0.25)
+        XCTAssertEqual(try XCTUnwrap(MeasurementContinuity.interval(previousUptime: 1000, uptime: 1250,
+                                                                   previousReceipt: 10, receipt: 10.5)), 0.25)
+        XCTAssertEqual(try XCTUnwrap(MeasurementContinuity.interval(previousUptime: 1000, uptime: 1500,
+                                                                   previousReceipt: 10, receipt: 10.25)), 0.25)
+    }
+
+    func testMeasuredIntervalRejectsGapsRebootStalledOrBufferedData() {
+        for (before, after, received): (UInt32, UInt32, Double) in [
+            (1000, 1250, 60), (1000, 5000, 0.25), (1000, 1000, 0.25),
+            (10_000, 0, 0.25), (1000, 1250, 0), (1000, 1250, -1), (1000, 1250, .infinity)
+        ] {
+            XCTAssertNil(MeasurementContinuity.interval(previousUptime: before, uptime: after,
+                                                        previousReceipt: 10, receipt: 10 + received))
+        }
+    }
+
     func testDeskHeightAndDwell() {
         var classifier = PostureClassifier()
         let settings = DetectionSettings()

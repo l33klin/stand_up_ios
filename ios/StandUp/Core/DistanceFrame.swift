@@ -56,3 +56,17 @@ public struct FrameSequence {
         return true
     }
 }
+
+/// Bound accounting by BOTH clocks. Buffered, stalled or restarted device data must
+/// never turn an unobserved interval into standing time. UInt32 subtraction handles
+/// the firmware uptime wrap at about 49.7 days; a reboot instead breaks continuity.
+public enum MeasurementContinuity {
+    public static func interval(previousUptime: UInt32, uptime: UInt32,
+                                previousReceipt: TimeInterval, receipt: TimeInterval) -> TimeInterval? {
+        let received = receipt - previousReceipt
+        let measured = Double(uptime &- previousUptime) / 1000
+        guard received.isFinite, received > 0, received <= PostureClassifier.staleAfter,
+              measured > 0, measured <= PostureClassifier.staleAfter else { return nil }
+        return min(received, measured)
+    }
+}

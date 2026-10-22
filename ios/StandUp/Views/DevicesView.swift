@@ -10,82 +10,136 @@ private struct DeviceList: View {
     @ObservedObject var model: AppModel
     @ObservedObject var bluetooth: BluetoothManager
     @State private var showAll = false
+
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Label(bluetooth.stateText, systemImage: "antenna.radiowaves.left.and.right")
-                    if model.isDemo { Label("当前正在演示，开始扫描将结束演示。", systemImage: "play.circle").font(.subheadline) }
-                    Toggle("显示所有 BLE 设备", isOn: $showAll).disabled(bluetooth.hasConnection)
-                        .onChange(of: showAll) { _, value in if bluetooth.isScanning { bluetooth.scan(allDevices: value) } }
-                    Button {
-                        model.prepareRealMode()
-                        if bluetooth.isScanning { bluetooth.stopScan() } else { bluetooth.scan(allDevices: showAll) }
-                    } label: {
-                        HStack {
-                            Text(bluetooth.isScanning ? "停止扫描" : "扫描蓝牙设备")
-                            Spacer()
-                            if bluetooth.isScanning { ProgressView() } else { Image(systemName: "magnifyingglass") }
-                        }.frame(minHeight: 28)
-                    }.disabled(bluetooth.hasConnection || (!bluetooth.canScan && !bluetooth.isScanning))
-                } footer: {
-                    Text("每次扫描持续 15 秒。默认只显示 StandUp 设备；开启全部设备可在开发板到货前测试蓝牙扫描。")
-                }
-
-                if bluetooth.hasConnection {
-                    Section("当前设备") {
-                        Label(bluetooth.connectedName ?? "StandUp", systemImage: "cpu")
-                        HStack {
-                            Text(bluetooth.connectionText).font(.subheadline)
-                            if bluetooth.isConnecting { Spacer(); ProgressView() }
-                        }
-                        if let info = bluetooth.firmwareInfo { LabeledContent("固件", value: info).font(.caption) }
-                        Button("断开连接", role: .destructive) { bluetooth.disconnect() }
+            ScrollView {
+                VStack(alignment: .leading, spacing: Theme.sectionGap) {
+                    if bluetooth.hasConnection { connectedDevice }
+                    else { discovery }
+                    if let error = bluetooth.errorMessage {
+                        Label(error, systemImage: "exclamationmark.triangle")
+                            .font(.subheadline).foregroundStyle(Theme.warning).fixedSize(horizontal: false, vertical: true)
                     }
-                }
-
-                if let error = bluetooth.errorMessage {
-                    Section("连接提示") { Label(error, systemImage: "exclamationmark.triangle").font(.subheadline) }
-                }
-
-                Section("附近设备（\(bluetooth.devices.count)）") {
-                    if bluetooth.devices.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(bluetooth.isScanning ? "正在寻找附近设备…" : "尚未发现设备").font(.headline)
-                            Text("请让设备通电并保持广播。蓝牙设备不会全部持续广播，手机也可能不会出现在列表中。")
-                                .font(.subheadline).foregroundStyle(Theme.muted)
-                        }.padding(.vertical, 8)
-                    }
-                    ForEach(bluetooth.devices) { device in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(alignment: .top) {
-                                Label(device.name, systemImage: device.isCompatible ? "cpu" : "wave.3.right")
-                                    .font(.headline)
-                                Spacer()
-                                Text(device.rssi == 127 ? "RSSI 未知" : "\(device.rssi) dBm")
-                                    .font(.caption.monospacedDigit()).foregroundStyle(Theme.muted)
-                            }
-                            Text(device.id.uuidString).font(.caption2.monospaced()).foregroundStyle(Theme.muted)
-                            if device.isCompatible {
-                                Button("连接此设备") { model.connect(device) }
-                                    .buttonStyle(.bordered).disabled(bluetooth.hasConnection)
+                    if !bluetooth.hasConnection {
+                        VStack(alignment: .leading, spacing: 16) {
+                            SectionHeading(title: "附近设备", detail: "\(bluetooth.devices.count) 台")
+                            if bluetooth.devices.isEmpty {
+                                EmptyReading(symbol: "dot.radiowaves.left.and.right",
+                                             title: bluetooth.isScanning ? "正在搜索附近设备" : "暂未发现设备",
+                                             detail: bluetooth.isScanning ? "请保持开发板通电并靠近手机" : "开始扫描，查找 StandUp 开发板")
                             } else {
-                                Text("未广播 StandUp 服务，仅供扫描测试。")
-                                    .font(.caption).foregroundStyle(Theme.muted)
+                                VStack(spacing: 0) {
+                                    ForEach(Array(bluetooth.devices.enumerated()), id: \.element.id) { index, device in
+                                        if index > 0 { Divider().padding(.leading, 16) }
+                                        if device.isCompatible {
+                                            Button { model.connect(device) } label: { deviceRow(device) }
+                                                .buttonStyle(.plain)
+                                        } else {
+                                            deviceRow(device)
+                                        }
+                                    }
+                                }.surface(padding: 0)
                             }
-                        }.padding(.vertical, 6)
+                        }
                     }
+                    HStack(spacing: 8) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                        Text(bluetooth.stateText).fixedSize(horizontal: false, vertical: true)
+                    }.font(.caption).foregroundStyle(Theme.muted)
                 }
-
-                Section {
-                    Button("打开 App 系统设置") {
-                        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
-                    }
-                } footer: { Text("蓝牙权限被拒绝时，在系统设置中允许访问。连接应从此 App 发起。") }
+                .padding(.horizontal, Theme.pageInset).padding(.top, 16).padding(.bottom, 28)
+                .frame(maxWidth: 640).frame(maxWidth: .infinity)
             }
-            .scrollContentBackground(.hidden).background(Theme.paper)
-            .navigationTitle("蓝牙设备")
+            .appPage().navigationTitle("设备")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                    } label: { Image(systemName: "gearshape").frame(minWidth: 44, minHeight: 44) }
+                        .accessibilityLabel("打开 App 系统设置")
+                }
+            }
             .onDisappear { bluetooth.stopScan() }
         }
+    }
+
+    private var discovery: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Image(systemName: "sensor.tag.radiowaves.forward")
+                .font(.system(size: 32, weight: .regular)).foregroundStyle(Theme.accent)
+                .frame(width: 64, height: 64)
+                .background(Theme.subtle, in: RoundedRectangle(cornerRadius: Theme.radius))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("连接你的升降台").font(.title2.weight(.semibold))
+                Text("开发板通电后，扫描并选择设备。")
+                    .font(.subheadline).foregroundStyle(Theme.muted)
+                if model.isDemo {
+                    Label("扫描将结束手机演示", systemImage: "play.circle").font(.caption).foregroundStyle(Theme.accent)
+                }
+            }
+            Button {
+                model.prepareRealMode()
+                if bluetooth.isScanning { bluetooth.stopScan() } else { bluetooth.scan(allDevices: showAll) }
+            } label: {
+                HStack(spacing: 8) {
+                    if bluetooth.isScanning { ProgressView().tint(Theme.onAccent) }
+                    Text(bluetooth.isScanning ? "停止扫描" : "扫描附近设备")
+                }
+            }.buttonStyle(PrimaryButtonStyle()).disabled(!bluetooth.canScan && !bluetooth.isScanning)
+            Toggle("包括其他蓝牙设备", isOn: $showAll)
+                .font(.subheadline)
+                .onChange(of: showAll) { _, value in if bluetooth.isScanning { bluetooth.scan(allDevices: value) } }
+            Text("扫描持续 15 秒，仅 StandUp 设备支持连接。")
+                .font(.caption).foregroundStyle(Theme.muted)
+        }
+    }
+
+    private var connectedDevice: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing: 16) {
+                Image(systemName: "cpu").font(.title).foregroundStyle(Theme.accent)
+                    .frame(width: 56, height: 56).background(Theme.subtle, in: RoundedRectangle(cornerRadius: 12))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(bluetooth.connectedName ?? "StandUp").font(.headline)
+                    Text(bluetooth.connectionText).font(.caption).foregroundStyle(Theme.muted)
+                }
+                Spacer(minLength: 0)
+                if bluetooth.isConnecting { ProgressView() }
+                else { Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.stand) }
+            }
+            Label("锁屏后继续监测", systemImage: "lock.iphone").font(.subheadline).foregroundStyle(Theme.muted)
+            if let info = bluetooth.firmwareInfo {
+                DisclosureGroup("设备信息") { Text(info).font(.caption.monospaced()).foregroundStyle(Theme.muted).padding(.top, 8) }
+                    .font(.subheadline)
+            }
+            Divider()
+            Button("断开连接", role: .destructive) { bluetooth.disconnect() }
+                .font(.subheadline.weight(.medium)).foregroundStyle(Theme.destructive)
+                .frame(maxWidth: .infinity, minHeight: 44)
+            Text("断开后停止监测与自动重连。")
+                .font(.caption).foregroundStyle(Theme.muted)
+        }.surface()
+    }
+
+    private func deviceRow(_ device: DiscoveredDevice) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: device.isCompatible ? "cpu" : "wave.3.right")
+                .font(.title3).foregroundStyle(device.isCompatible ? Theme.accent : Theme.muted)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(device.name).font(.subheadline.weight(.medium)).lineLimit(2)
+                Text(device.isCompatible ? "StandUp · 轻点连接" : "其他蓝牙设备")
+                    .font(.caption).foregroundStyle(Theme.muted)
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 6) {
+                Image(systemName: device.isCompatible ? "plus.circle" : "wave.3.right")
+                    .foregroundStyle(device.isCompatible ? Theme.accent : Theme.muted)
+                Text(device.rssi == 127 ? "信号未知" : "\(device.rssi) dBm").font(.caption2.monospacedDigit()).foregroundStyle(Theme.muted)
+            }
+        }.padding(16).foregroundStyle(Theme.ink)
+            .accessibilityElement(children: .combine)
     }
 }

@@ -18,6 +18,8 @@
 		D1CB7DA2D4528DC30A866CD6 /* StandUp/Bluetooth/BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57181EF5172A0AB80B274E3C /* StandUp/Bluetooth/BluetoothManager.swift */; };
 		D34F870A1AED01DD8B4FC34F /* StandUp/Views/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C0571DD90B642575876482 /* StandUp/Views/SettingsView.swift */; };
 		E3E2B62ADAB9067E67F551E3 /* StandUp/Views/Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D789385FC9B9CCF887C38EB4 /* StandUp/Views/Theme.swift */; };
+		CD20CDF7302FB0BC62D09846 /* StandUp/Core/StandingHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CCB7CA86EB1F89F44B8ADC /* StandUp/Core/StandingHistory.swift */; };
+		946E4B25A39B8BD9245FDC16 /* StandUp/Views/HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA56FAAA43F11995E8ACC67C /* StandUp/Views/HistoryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,8 @@
 		E29DC26BFF44D95CACD75BB3 /* StandUp/Views/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/DashboardView.swift; sourceTree = "<group>"; };
 		E4C0571DD90B642575876482 /* StandUp/Views/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/SettingsView.swift; sourceTree = "<group>"; };
 		EE15BD592C1E2E372BC5AAB1 /* StandUp/Core/PostureClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Core/PostureClassifier.swift; sourceTree = "<group>"; };
+		F8CCB7CA86EB1F89F44B8ADC /* StandUp/Core/StandingHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Core/StandingHistory.swift; sourceTree = "<group>"; };
+		FA56FAAA43F11995E8ACC67C /* StandUp/Views/HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/HistoryView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,9 +57,11 @@
 				4C169D981D85E62759AF87CA /* StandUp/AppModel.swift */,
 				57181EF5172A0AB80B274E3C /* StandUp/Bluetooth/BluetoothManager.swift */,
 				31DC323D56FCA8193E672F39 /* StandUp/Core/DistanceFrame.swift */,
+				F8CCB7CA86EB1F89F44B8ADC /* StandUp/Core/StandingHistory.swift */,
 				EE15BD592C1E2E372BC5AAB1 /* StandUp/Core/PostureClassifier.swift */,
 				487A8337867D3B12DA341547 /* StandUp/StandUpApp.swift */,
 				A99C0BF5F5BC982EE25271AB /* StandUp/Views/ContentView.swift */,
+				FA56FAAA43F11995E8ACC67C /* StandUp/Views/HistoryView.swift */,
 				E29DC26BFF44D95CACD75BB3 /* StandUp/Views/DashboardView.swift */,
 				D473AD37DB6D63DB18AB15C4 /* StandUp/Views/DevicesView.swift */,
 				E4C0571DD90B642575876482 /* StandUp/Views/SettingsView.swift */,
@@ -146,6 +152,8 @@
 				C6598484E60316C66EACAB22 /* StandUp/AppModel.swift in Sources */,
 				D1CB7DA2D4528DC30A866CD6 /* StandUp/Bluetooth/BluetoothManager.swift in Sources */,
 				7008FB0DB0FCCDACC4220EBF /* StandUp/Core/DistanceFrame.swift in Sources */,
+				946E4B25A39B8BD9245FDC16 /* StandUp/Views/HistoryView.swift in Sources */,
+				CD20CDF7302FB0BC62D09846 /* StandUp/Core/StandingHistory.swift in Sources */,
 				199FAD06DDB0B15040FF0C04 /* StandUp/Core/PostureClassifier.swift in Sources */,
 				894AC33F903083363EC015AD /* StandUp/StandUpApp.swift in Sources */,
 				50AD7C73B7C05FCD87BB1B31 /* StandUp/Views/ContentView.swift in Sources */,

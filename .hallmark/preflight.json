@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-22",
+  "framework": "SwiftUI / iOS 17",
+  "font": "SF / PingFang; native Dynamic Type",
+  "previous_theme": "Coral; warm RGB tokens in Views/Theme.swift",
+  "previous_layout": "Stat-Led stacked surfaces",
+  "motion": "native only",
+  "spacing": "4 pt scale; existing 24 pt page inset",
+  "adaptation": "Native iOS: Theme.swift is the token export; CSS, browser chrome, marketing sections and web font dependencies do not apply.",
+  "scope": [
+    "Theme.swift",
+    "ContentView.swift",
+    "DashboardView.swift",
+    "HistoryView.swift",
+    "DevicesView.swift",
+    "SettingsView.swift"
+  ]
+}
