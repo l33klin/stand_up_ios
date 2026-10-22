@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-10-22",
+    "genre": "modern-minimal",
+    "macrostructure": "Stat-Led",
+    "theme": "Coral",
+    "enrichment": "none",
+    "nav": "native iOS TabView + NavigationStack",
+    "footer": "native session note",
+    "brief": "StandUp · VL53L1X desk riser distance monitor",
+    "adaptation": "SwiftUI system typography and RGB semantic tokens; web-only CSS and marketing sections do not apply."
+  }
+]

@@ -1,0 +1,250 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		199FAD06DDB0B15040FF0C04 /* StandUp/Core/PostureClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE15BD592C1E2E372BC5AAB1 /* StandUp/Core/PostureClassifier.swift */; };
+		2E03FC9C8D896B37E45626A1 /* StandUp/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3685E330EC5277A9DD5661C6 /* StandUp/Assets.xcassets */; };
+		3EE584B6C4084B9B4A5F5297 /* StandUp/Views/DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D473AD37DB6D63DB18AB15C4 /* StandUp/Views/DevicesView.swift */; };
+		50AD7C73B7C05FCD87BB1B31 /* StandUp/Views/ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99C0BF5F5BC982EE25271AB /* StandUp/Views/ContentView.swift */; };
+		7008FB0DB0FCCDACC4220EBF /* StandUp/Core/DistanceFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31DC323D56FCA8193E672F39 /* StandUp/Core/DistanceFrame.swift */; };
+		894AC33F903083363EC015AD /* StandUp/StandUpApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487A8337867D3B12DA341547 /* StandUp/StandUpApp.swift */; };
+		BBE9ECB6D0EC4C70A45684C2 /* StandUp/Views/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29DC26BFF44D95CACD75BB3 /* StandUp/Views/DashboardView.swift */; };
+		C6598484E60316C66EACAB22 /* StandUp/AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C169D981D85E62759AF87CA /* StandUp/AppModel.swift */; };
+		D1CB7DA2D4528DC30A866CD6 /* StandUp/Bluetooth/BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57181EF5172A0AB80B274E3C /* StandUp/Bluetooth/BluetoothManager.swift */; };
+		D34F870A1AED01DD8B4FC34F /* StandUp/Views/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C0571DD90B642575876482 /* StandUp/Views/SettingsView.swift */; };
+		E3E2B62ADAB9067E67F551E3 /* StandUp/Views/Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = D789385FC9B9CCF887C38EB4 /* StandUp/Views/Theme.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0112DAE3F84CB4DF5179BE01 /* StandUp/Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = StandUp/Info.plist; sourceTree = "<group>"; };
+		31DC323D56FCA8193E672F39 /* StandUp/Core/DistanceFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Core/DistanceFrame.swift; sourceTree = "<group>"; };
+		3685E330EC5277A9DD5661C6 /* StandUp/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = StandUp/Assets.xcassets; sourceTree = "<group>"; };
+		38A007151ABE87CC01A5B6E9 /* StandUp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = StandUp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		487A8337867D3B12DA341547 /* StandUp/StandUpApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/StandUpApp.swift; sourceTree = "<group>"; };
+		4C169D981D85E62759AF87CA /* StandUp/AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/AppModel.swift; sourceTree = "<group>"; };
+		57181EF5172A0AB80B274E3C /* StandUp/Bluetooth/BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Bluetooth/BluetoothManager.swift; sourceTree = "<group>"; };
+		A99C0BF5F5BC982EE25271AB /* StandUp/Views/ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/ContentView.swift; sourceTree = "<group>"; };
+		D473AD37DB6D63DB18AB15C4 /* StandUp/Views/DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/DevicesView.swift; sourceTree = "<group>"; };
+		D789385FC9B9CCF887C38EB4 /* StandUp/Views/Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/Theme.swift; sourceTree = "<group>"; };
+		E29DC26BFF44D95CACD75BB3 /* StandUp/Views/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/DashboardView.swift; sourceTree = "<group>"; };
+		E4C0571DD90B642575876482 /* StandUp/Views/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/SettingsView.swift; sourceTree = "<group>"; };
+		EE15BD592C1E2E372BC5AAB1 /* StandUp/Core/PostureClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Core/PostureClassifier.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7561BFB015D8F536760CB671 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E50290A24C49A459B43487C5 = {
+			isa = PBXGroup;
+			children = (
+				4C169D981D85E62759AF87CA /* StandUp/AppModel.swift */,
+				57181EF5172A0AB80B274E3C /* StandUp/Bluetooth/BluetoothManager.swift */,
+				31DC323D56FCA8193E672F39 /* StandUp/Core/DistanceFrame.swift */,
+				EE15BD592C1E2E372BC5AAB1 /* StandUp/Core/PostureClassifier.swift */,
+				487A8337867D3B12DA341547 /* StandUp/StandUpApp.swift */,
+				A99C0BF5F5BC982EE25271AB /* StandUp/Views/ContentView.swift */,
+				E29DC26BFF44D95CACD75BB3 /* StandUp/Views/DashboardView.swift */,
+				D473AD37DB6D63DB18AB15C4 /* StandUp/Views/DevicesView.swift */,
+				E4C0571DD90B642575876482 /* StandUp/Views/SettingsView.swift */,
+				D789385FC9B9CCF887C38EB4 /* StandUp/Views/Theme.swift */,
+				3685E330EC5277A9DD5661C6 /* StandUp/Assets.xcassets */,
+				0112DAE3F84CB4DF5179BE01 /* StandUp/Info.plist */,
+				FBDC4F23F93125BBEEAE800C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				38A007151ABE87CC01A5B6E9 /* StandUp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0E8A3AD980EC179856012B7E /* StandUp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F497FD0CF9CA1625C4A860DE /* Build configuration list for PBXNativeTarget "StandUp" */;
+			buildPhases = (
+				BCE16DD0260827ECF338C787 /* Sources */,
+				7561BFB015D8F536760CB671 /* Frameworks */,
+				0189424A5A60FED329FA868E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = StandUp;
+			productName = StandUp;
+			productReference = 38A007151ABE87CC01A5B6E9 /* StandUp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98F54143AB4E86B28C3AFEE0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					0E8A3AD980EC179856012B7E = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = 49EA05A46B1A86EA7E413B43 /* Build configuration list for PBXProject "StandUp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				"zh-Hans",
+				en,
+				Base,
+			);
+			mainGroup = E50290A24C49A459B43487C5;
+			productRefGroup = FBDC4F23F93125BBEEAE800C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0E8A3AD980EC179856012B7E /* StandUp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0189424A5A60FED329FA868E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2E03FC9C8D896B37E45626A1 /* StandUp/Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BCE16DD0260827ECF338C787 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C6598484E60316C66EACAB22 /* StandUp/AppModel.swift in Sources */,
+				D1CB7DA2D4528DC30A866CD6 /* StandUp/Bluetooth/BluetoothManager.swift in Sources */,
+				7008FB0DB0FCCDACC4220EBF /* StandUp/Core/DistanceFrame.swift in Sources */,
+				199FAD06DDB0B15040FF0C04 /* StandUp/Core/PostureClassifier.swift in Sources */,
+				894AC33F903083363EC015AD /* StandUp/StandUpApp.swift in Sources */,
+				50AD7C73B7C05FCD87BB1B31 /* StandUp/Views/ContentView.swift in Sources */,
+				BBE9ECB6D0EC4C70A45684C2 /* StandUp/Views/DashboardView.swift in Sources */,
+				3EE584B6C4084B9B4A5F5297 /* StandUp/Views/DevicesView.swift in Sources */,
+				D34F870A1AED01DD8B4FC34F /* StandUp/Views/SettingsView.swift in Sources */,
+				E3E2B62ADAB9067E67F551E3 /* StandUp/Views/Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		639A7CA24D39909E713B47F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 59DAA92PX7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = StandUp/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.l33klin.StandUp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		7082CC0B6FC1282FCEABD07A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 59DAA92PX7;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = StandUp/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.l33klin.StandUp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		89E1FD6268CC0F221A2BE178 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E6DE6C99132752C914FEF632 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		49EA05A46B1A86EA7E413B43 /* Build configuration list for PBXProject "StandUp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				89E1FD6268CC0F221A2BE178 /* Debug */,
+				E6DE6C99132752C914FEF632 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F497FD0CF9CA1625C4A860DE /* Build configuration list for PBXNativeTarget "StandUp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7082CC0B6FC1282FCEABD07A /* Debug */,
+				639A7CA24D39909E713B47F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+}

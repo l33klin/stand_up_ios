@@ -1,0 +1,16 @@
+menu "StandUp sensor"
+    config STANDUP_MOCK_SENSOR
+        bool "Use simulated distance instead of VL53L1X"
+        default y
+        help
+            Simulate 100 mm and 450 mm in alternating 15-second intervals.
+            Packets are explicitly marked as simulated. Disable for real hardware.
+    config STANDUP_I2C_SDA
+        int "VL53L1X SDA GPIO (verify your board pinout)"
+        range 0 20
+        default 4
+    config STANDUP_I2C_SCL
+        int "VL53L1X SCL GPIO (verify your board pinout)"
+        range 0 20
+        default 5
+endmenu
