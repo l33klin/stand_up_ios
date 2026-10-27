@@ -140,14 +140,16 @@ struct DashboardView: View {
                 Rectangle().fill(Theme.rule).frame(width: 1, height: 36).accessibilityHidden(true)
                 duration("坐姿", seconds: model.sittingSeconds, symbol: "chair")
             }
-            Label(model.bluetooth.isReady && !model.simulatedFirmware ? "锁屏后继续记录" : "仅真实设备数据计入每日目标", systemImage: "lock")
+            Label(model.isOnLunchBreak ? "午休中，站立与坐姿暂停累计" : model.bluetooth.isReady && !model.simulatedFirmware ? "锁屏后继续记录" : "仅真实设备数据计入每日目标",
+                  systemImage: model.isOnLunchBreak ? "cup.and.saucer" : "lock")
                 .font(.caption).foregroundStyle(Theme.muted).padding(.top, 4)
         }
     }
 
     private var goalStatus: String {
         if model.isDemo || model.simulatedFirmware { return "演示数据不计入目标与历史" }
-        if !model.bluetooth.isReady { return model.bluetooth.isConnecting ? "等待设备连接，连接期间不计时" : "连接你的升降台，开始记录" }
+        if model.isOnLunchBreak { return "午休中，暂停统计 · 实时测距继续" }
+        if !model.bluetooth.isReady { return model.bluetooth.hasConnection ? model.bluetooth.connectionText : "连接你的升降台，开始记录" }
         if model.isCountingDailyStanding { return "正在记录站立时间" }
         if model.posture == .sitting { return "当前为坐姿高度" }
         return "等待稳定、有效的测距"

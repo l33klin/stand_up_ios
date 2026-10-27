@@ -47,6 +47,15 @@ final class AppModel: ObservableObject {
             distanceMM = nil
         }
     }
+    @Published var lunchBreak: LunchBreakSettings {
+        didSet {
+            let validated = lunchBreak.validated()
+            if lunchBreak != validated { lunchBreak = validated }
+            if let data = try? JSONEncoder().encode(validated) { defaults?.set(data, forKey: "lunchBreak.v1") }
+            // A setting change applies from now, without reinterpreting the previous sample interval.
+            statisticsSettingsChangedAt = clock().uptime
+        }
+    }
     @Published private(set) var posture: DeskPosture = .unknown
     @Published private(set) var distanceMM: Double?
     @Published private(set) var history: [DistancePoint] = []
@@ -80,6 +89,7 @@ final class AppModel: ObservableObject {
     private var lastHistorySave: TimeInterval
     private var historyDirty = false
     private var lastFrameWasSimulated: Bool?
+    private var statisticsSettingsChangedAt: TimeInterval
 
     var todayRecord: DailyDeskRecord {
         let key = StandingHistory.dayKey(for: todayDate, calendar: calendar)
@@ -98,20 +108,23 @@ final class AppModel: ObservableObject {
     }
 
     var isCountingDailyStanding: Bool {
-        deviceIsReady() && !isDemo && lastFrameWasSimulated == false &&
+        !isOnLunchBreak && deviceIsReady() && !isDemo && lastFrameWasSimulated == false &&
             posture == .standing && classifier.lastSampleTime.map { clock().uptime - $0 <= PostureClassifier.staleAfter } == true
     }
+
+    var isOnLunchBreak: Bool { lunchBreak.isActive(at: clock().date, calendar: calendar) }
 
     init(defaults: UserDefaults? = .standard, historyStorage: StandingHistoryStorage? = nil,
          clock: @escaping () -> MonitoringInstant = { .now }, deviceIsReady: (() -> Bool)? = nil,
          calendar: Calendar = .autoupdatingCurrent, startTimer: Bool = true) {
         self.defaults = defaults
-        let transport = BluetoothManager()
+        let transport = BluetoothManager(defaults: defaults)
         bluetooth = transport
         self.clock = clock
         self.calendar = calendar
         timerEnabled = startTimer
         let instant = clock()
+        statisticsSettingsChangedAt = instant.uptime
         lastHistorySave = instant.uptime
         todayDate = instant.date
         let storage = historyStorage ?? LocalStandingHistoryStorage(defaults: defaults)
@@ -121,6 +134,7 @@ final class AppModel: ObservableObject {
         if let data = defaults?.data(forKey: "detection.v1"),
            let saved = try? JSONDecoder().decode(DetectionSettings.self, from: data) { settings = saved.validated() }
         else { settings = DetectionSettings() }
+        lunchBreak = LunchBreakSettings.restore(from: defaults?.data(forKey: "lunchBreak.v1"))
         bluetooth.onFrame = { [weak self] data in self?.receive(data) }
         bluetooth.onDisconnect = { [weak self] in self?.clearReading(message: "设备未连接，识别已暂停。") }
         subscription = bluetooth.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
@@ -168,7 +182,10 @@ final class AppModel: ObservableObject {
     func setActive(_ value: Bool) {
         guard active != value else { return }
         active = value
-        if value { startUITimer() }
+        if value {
+            startUITimer()
+            if !isDemo { bluetooth.resumeMonitoring() }
+        }
         else {
             timer?.invalidate()
             timer = nil
@@ -282,11 +299,15 @@ final class AppModel: ObservableObject {
             lastMeasurement = (now, frame.uptimeMilliseconds)
             // Credit only an interval confirmed by consecutive valid measurements.
             // Timers, lock/unlock, reconnects and relaunches never backfill time.
-            if !sourceChanged, let duration = interval, previousPosture == posture, posture != .unknown {
-                if posture == .standing { standingSeconds += duration }
-                if posture == .sitting { sittingSeconds += duration }
+            if !sourceChanged, let interval, previousPosture == posture, posture != .unknown {
+                let duration = min(interval, max(0, now - statisticsSettingsChangedAt))
+                let counted = lunchBreak.countedSeconds(from: instant.date.addingTimeInterval(-duration),
+                                                       to: instant.date, calendar: calendar)
+                if posture == .standing { standingSeconds += counted }
+                if posture == .sitting { sittingSeconds += counted }
                 if dailyHistory.credit(seconds: duration, endingAt: instant.date, posture: posture,
                                        connected: deviceIsReady(), simulated: isDemo || frame.isSimulated,
+                                       lunchBreak: lunchBreak,
                                        calendar: calendar) { historyDirty = true }
             }
             if frame.isValid {

@@ -52,6 +52,7 @@ static void sample_task(void *arg)
     bool initialized = false;
     int failures = 0;
     int64_t retry_at = 0;
+    int64_t log_at = 0;
 #endif
     for (;;) {
         uint16_t mm = UINT16_MAX;
@@ -69,6 +70,8 @@ static void sample_task(void *arg)
             initialized = err == ESP_OK;
             retry_at = esp_timer_get_time() + 5000000;
             if (!initialized) ESP_LOGW(TAG, "VL53L1X init: %s; retry in 5s", esp_err_to_name(err));
+            else ESP_LOGI(TAG, "VL53L1X ready (SDA=%d, SCL=%d, address=0x29)",
+                          CONFIG_STANDUP_I2C_SDA, CONFIG_STANDUP_I2C_SCL);
         }
         if (initialized) {
             bool valid = false;
@@ -83,6 +86,12 @@ static void sample_task(void *arg)
                 }
             } else { failures = 0; }
         } else { status = 2; }
+        // Keep hardware diagnostics readable without logging every BLE sample.
+        if (esp_timer_get_time() >= log_at) {
+            if (status == 0) ESP_LOGI(TAG, "VL53L1X distance: %u mm", (unsigned)mm);
+            else ESP_LOGW(TAG, "VL53L1X sample invalid (status=%u)", (unsigned)status);
+            log_at = esp_timer_get_time() + 5000000;
+        }
 #endif
         uint8_t frame[DISTANCE_FRAME_SIZE];
         distance_encode(frame, sequence++, (uint32_t)(esp_timer_get_time() / 1000), mm, status, simulated);

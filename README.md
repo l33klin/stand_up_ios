@@ -1,8 +1,8 @@
 # StandUp
 
-一个原生 iOS App，通过 BLE 连接 **ESP32-C2 + VL53L1X**，读取升降台与固定台面的间距，推断当前桌台处于坐姿还是站立高度。**距离大为站立、距离小为坐姿**，支持手动设置与两点校准。
+一个原生 iOS App，通过 BLE 连接 **ESP32-C2 / ESP32-C3 + VL53L1X**，读取升降台与固定台面的间距，推断当前桌台处于坐姿还是站立高度。**距离大为站立、距离小为坐姿**，支持手动设置与两点校准。当前已连接的实物识别为 **ESP32-C3、4 MB Flash**，烧录时使用 `esp32c3` 目标。
 
-包括蓝牙扫描、连接与订阅、实时距离、60 秒曲线、阈值与防抖设置、每日站立目标、最近 30 天的历史记录、蓝牙锁屏监测与会话计时，以及不依赖开发板的手机演示。没有第三方 iOS 依赖，无账户或服务器。
+包括蓝牙扫描、连接与订阅、实时距离、60 秒曲线、阈值与防抖设置、每日站立目标、午休统计排除、最近 30 天的历史记录、蓝牙锁屏监测与会话计时，以及不依赖开发板的手机演示。没有第三方 iOS 依赖，无账户或服务器。
 
 界面采用冷白底与蓝色点缀：今天突出目标进度环和台面间距，历史按日汇总，校准与防抖收进设置二级页面。设计记录见 [design.md](design.md)。
 
@@ -16,7 +16,9 @@
 4. USB 连接、解锁 iPhone，并信任电脑。手机“设置 → 隐私与安全性 → 开发者模式”打开后，按系统提示重启并确认。
 5. Xcode 顶部选择 `StandUp` scheme 和你的 iPhone，按 **⌘R**。若系统要求信任开发者，在手机设置中按提示处理。免费 Personal Team 的签名有有效期，过期需重新运行安装。
 
-2026-10-22 重新检查本机环境：macOS 14.7.7、Xcode 15.4；iPhone 12 Pro Max（iOS 26.3）已连接，开发者模式已开启。当前 `xcodebuild -showdestinations` 明确报告 `iOS 17.5 is not installed`，因此应先在 Xcode → Settings → Platforms 安装当前 Xcode 对应的 iOS 17.5 组件，完成后重启 Xcode 并检查 Window → Devices and Simulators。组件安装参考 [Apple 官方说明](https://developer.apple.com/documentation/xcode/downloading-and-installing-additional-xcode-components)。SDK 版本与手机系统版本不必完全相同；若补齐组件后仍明确提示设备系统不受支持，再按 Apple 支持表选择升级方案。安装 App 还需要配置 Apple ID 与开发签名。本仓库未包含签名证书或可直接安装的签名 IPA。
+2026-10-22 重新检查本机环境：macOS 14.7.7、Xcode 15.4；iPhone 12 Pro Max（iOS 26.3）已连接，开发者模式已开启。当时 `xcodebuild -showdestinations` 报告 `iOS 17.5 is not installed`，因此应先在 Xcode → Settings → Platforms 安装当前 Xcode 对应的 iOS 17.5 组件，完成后重启 Xcode 并检查 Window → Devices and Simulators。组件安装参考 [Apple 官方说明](https://developer.apple.com/documentation/xcode/downloading-and-installing-additional-xcode-components)。SDK 版本与手机系统版本不必完全相同；若补齐组件后仍明确提示设备系统不受支持，再按 Apple 支持表选择升级方案。安装 App 还需要配置 Apple ID 与开发签名。本仓库未包含签名证书或可直接安装的签名 IPA。
+
+2026-10-26：午休功能的完整 iOS 工程已完成未签名构建，以上早期平台缺失问题未在本次构建复现。安装到手机仍按前述签名与运行步骤操作。
 
 ## 开发板未到时怎么测试
 
@@ -41,15 +43,21 @@
 
 App 只根据桌台高度推断状态，不能检测人在不在桌前。不含久坐提醒。阈值与校准记录自动保存在手机，距离曲线和本次会话时长不持久化。
 
+## 午休时间
+
+- **设置 → 午休 → 午休暂停统计**：默认关闭，启用后的初始时段为每天 **12:00–13:00**，可修改开始与结束时间。按手机当地时间重复，设置保存在本机。
+- 午休内不累计站立、坐姿、本次监测、每日目标或历史时长，蓝牙连接、实时距离与趋势继续更新。锁屏收到的数据也使用同一规则，不依赖定时器；午休结束后的连续有效测距自动恢复累计。
+- 跨越午休起止边界的测量只计算午休外的部分。修改设置仅影响之后的统计，不重算已保存记录。结束早于开始表示次日结束；开始与结束相同会显示提示，此时不暂停统计。
+
 ## 锁屏与后台监测
 
 1. 在前台连接开发板，收到真实测距后可以锁屏。已声明 `bluetooth-central`，由测距通知唤醒处理，不依赖后台定时器；手机演示在后台暂停。扫描仍只在前台进行。
 2. 只有相邻两次有效且姿态稳定的测距才确认一段时长；同时检查手机单调时钟与开发板 `uptime_ms`，均须递增且间隔不超过 2 秒，取较短间隔。重复、倒序、传感器时钟停滞、批量延迟和长空档不会被补算。此保守策略可能少算系统延迟期间的站立时间。
-3. 意外断连后停止累计，并向同一设备提交等待重连的请求；回到范围或开发板重启后恢复服务发现与订阅，重新等待稳定读数。在设备页点 **断开连接** 可取消监测与重连。关闭系统蓝牙或撤销权限后需重新打开 App 检查并连接。
-4. 已实现 CoreBluetooth 状态恢复：系统因蓝牙事件重新启动 App 时，在创建界面前用原标识重建管理器，恢复外设代理、未完成的连接/服务发现/订阅。只恢复已保存的每日累计，进程退出期间不凭墙上时钟补记。
-5. 后台接收受 iOS 调度和连接状态影响，不保证全天无中断。**手动从多任务界面划掉 App 后，不应期待后台继续接收**；需重新打开并检查连接。手机重启后先解锁一次。参见 [Apple 后台 BLE 指南](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html) 与 [状态恢复条件](https://developer.apple.com/library/archive/qa/qa1962/_index.html)。
+3. 连接时启用 iOS 17+ 系统自动重连，保存所选设备。离开范围后停止累计，保留系统等待连接的请求，不用 12 秒超时取消；回到范围或开发板重启后重新发现服务并恢复订阅，再等待稳定读数。正常重开 App、回到前台或蓝牙恢复可读取已选设备继续监测。在设备页点 **断开连接** 会保存停止状态并取消监测与重连；“恢复监测”和“最近收到数据”可帮助排查连接或数据中断。
+4. 已实现 CoreBluetooth 状态恢复：系统因蓝牙事件重新启动 App 时，在创建界面前用原标识重建管理器，优先恢复所选外设、代理及订阅。即使没有恢复字典，正常启动也能读取已保存的设备信息继续连接。连接或订阅的临时错误保留监测目标；连续快速失败会暂停重试并提示回到 App，避免空转。只恢复已保存的每日累计，进程退出期间不凭墙上时钟补记。
+5. 后台接收受 iOS 调度和连接状态影响，不保证全天无中断。**手动从多任务界面划掉 App 后，不应期待后台继续接收**；需重新打开并检查连接。手机重启后先解锁一次。参见 [Apple 后台 BLE 指南](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html) 与 [状态恢复条件](https://developer.apple.com/documentation/technotes/tn3115-bluetooth-state-restoration-app-relaunch-rules)。
 
-锁屏计时逻辑有自动化测试；真实手机上的通知唤醒、断连重连和系统终止后的恢复仍待开发板到货后按 [验收清单](docs/testing.md) 测试。现有 BLE v1 帧已包含所需时间戳，无需为此修改固件协议。
+2026-10-27 已针对离开范围后后台重连进行代码优化，策略与计时有自动化测试；真实手机上的离开/返回、通知唤醒及系统终止后的恢复仍须按 [验收清单](docs/testing.md) 实测。更新后先连接一次设备以保存监测目标，再进行锁屏离开/返回测试。现有 BLE v1 帧已包含所需时间戳，无需为此修改固件协议。
 
 ## 工程结构与验证
 

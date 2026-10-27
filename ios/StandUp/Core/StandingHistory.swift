@@ -84,25 +84,30 @@ public struct StandingHistory: Codable, Equatable {
     @discardableResult
     public mutating func credit(seconds: TimeInterval, endingAt end: Date, posture: DeskPosture,
                                 connected: Bool, simulated: Bool,
+                                lunchBreak: LunchBreakSettings = LunchBreakSettings(),
                                 calendar: Calendar = .autoupdatingCurrent) -> Bool {
         guard connected, !simulated, posture != .unknown,
               seconds.isFinite, seconds > 0, seconds <= 90_000,
               end.timeIntervalSinceReferenceDate.isFinite else { return false }
         let calendar = Self.dayCalendar(calendar)
         var start = end.addingTimeInterval(-seconds)
+        var changed = false
         while start < end {
             let key = Self.dayKey(for: start, calendar: calendar)
             guard let boundary = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: start)),
                   boundary > start else { return false }
             let stop = min(end, boundary)
-            var record = records[key] ?? DailyDeskRecord(day: key, goalMinutes: goalMinutes)
-            if posture == .standing { record.standingSeconds += stop.timeIntervalSince(start) }
-            else { record.sittingSeconds += stop.timeIntervalSince(start) }
-            records[key] = record
+            let counted = lunchBreak.countedSeconds(from: start, to: stop, calendar: calendar)
+            if counted > 0 {
+                var record = records[key] ?? DailyDeskRecord(day: key, goalMinutes: goalMinutes)
+                if posture == .standing { record.standingSeconds += counted }
+                else { record.sittingSeconds += counted }
+                records[key] = record
+                changed = true
+            }
             start = stop
         }
-        prune(on: end, calendar: calendar)
-        return true
+        return prune(on: end, calendar: calendar) || changed
     }
 
     public static func restore(from data: Data?, on date: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> Self {

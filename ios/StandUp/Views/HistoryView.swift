@@ -113,6 +113,8 @@ struct HistoryView: View {
             }
             Image(systemName: "chevron.right").font(.caption2.weight(.semibold)).foregroundStyle(Theme.muted)
         }.foregroundStyle(Theme.ink).padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(record.day)，站立 \(StandingDuration.text(record.standingSeconds))，目标 \(record.goalMinutes) 分钟，\(record.isComplete ? "已达标" : "未达标")")
     }
@@ -138,7 +140,7 @@ private struct DailyRecordView: View {
                         Divider()
                         detailRow("有效监测", value: StandingDuration.text(record.standingSeconds + record.sittingSeconds), symbol: "clock")
                     }.surface()
-                    Text("包含锁屏时接收的有效测距。数据空档与演示时段不计入。")
+                    Text("包含锁屏时接收的有效测距。按当时设置排除午休时段，数据空档与演示时段不计入。")
                         .font(.caption).foregroundStyle(Theme.muted).multilineTextAlignment(.center)
                 }.padding(.horizontal, Theme.pageInset).padding(.bottom, 28)
                     .frame(maxWidth: 640).frame(maxWidth: .infinity)

@@ -107,9 +107,19 @@ private struct DeviceList: View {
                 }
                 Spacer(minLength: 0)
                 if bluetooth.isConnecting { ProgressView() }
-                else { Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.stand) }
+                else if bluetooth.isReady { Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.stand) }
+                else { Image(systemName: "exclamationmark.circle").foregroundStyle(Theme.warning) }
             }
-            Label("锁屏后继续监测", systemImage: "lock.iphone").font(.subheadline).foregroundStyle(Theme.muted)
+            Label(bluetooth.isReady ? "锁屏后继续监测" : "等待设备回到范围，数据中断期间不计时", systemImage: "lock.iphone")
+                .font(.subheadline).foregroundStyle(Theme.muted)
+            if let received = bluetooth.lastMeasurementAt {
+                LabeledContent("最近收到数据") { Text(received, style: .time).monospacedDigit() }
+                    .font(.caption).foregroundStyle(Theme.muted)
+            }
+            if !bluetooth.isReady {
+                Button("恢复监测") { bluetooth.resumeMonitoring() }
+                    .font(.subheadline).frame(minHeight: 44).disabled(!bluetooth.canScan)
+            }
             if let info = bluetooth.firmwareInfo {
                 DisclosureGroup("设备信息") { Text(info).font(.caption.monospaced()).foregroundStyle(Theme.muted).padding(.top, 8) }
                     .font(.subheadline)

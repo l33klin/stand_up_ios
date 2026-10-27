@@ -1,0 +1,4 @@
+# Connected ESP32-C3: 40 MHz crystal, 4 MB Flash, external USB-UART bridge.
+# A /dev/cu.usbmodem* name alone does not identify native USB Serial/JTAG.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y

@@ -273,4 +273,89 @@ final class DailyGoalTests: XCTestCase {
         XCTAssertEqual(stored.records.count, 1)
         XCTAssertEqual(stored.records.keys.first, "2026-10-22")
     }
+
+    func testLunchBoundariesExcludeSessionAndDailyTimeWhileLocked() {
+        let clock = TestMonitoringClock()
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        clock.date = formatter.date(from: "2026-10-26T11:59:57.875+08:00")!
+        let model = AppModel(defaults: nil, clock: clock.read, deviceIsReady: { true }, calendar: calendar, startTimer: false)
+        model.lunchBreak = LunchBreakSettings(isEnabled: true, startMinute: 720, endMinute: 721)
+        model.setActive(false)
+        var sequence: UInt16 = 0
+        func send() {
+            clock.advance(0.25); sequence &+= 1
+            model.bluetooth.onFrame?(DistanceFrame.encode(sequence: sequence, uptime: UInt32(sequence) * 250,
+                                                          distance: 450, simulated: false))
+        }
+        for _ in 0..<9 { send() }
+        XCTAssertEqual(model.posture, .standing)
+        XCTAssertNotNil(model.distanceMM) // Distance detection and notifications continue during lunch.
+        XCTAssertTrue(model.isOnLunchBreak)
+        XCTAssertFalse(model.isCountingDailyStanding)
+        XCTAssertEqual(model.todayRecord.standingSeconds, 0.375, accuracy: 0.001)
+        XCTAssertEqual(model.standingSeconds, 0.375, accuracy: 0.001)
+        for _ in 0..<239 { send() }
+        XCTAssertEqual(model.todayRecord.standingSeconds, 0.375, accuracy: 0.001)
+        XCTAssertEqual(model.standingSeconds, 0.375, accuracy: 0.001)
+        send() // 12:01:00.125: count only the last 0.125 seconds, with no timer or unlock.
+        XCTAssertFalse(model.isOnLunchBreak)
+        XCTAssertTrue(model.isCountingDailyStanding)
+        XCTAssertEqual(model.todayRecord.standingSeconds, 0.5, accuracy: 0.001)
+        XCTAssertEqual(model.standingSeconds, 0.5, accuracy: 0.001)
+        model.setActive(true)
+        model.tick()
+        XCTAssertEqual(model.todayRecord.standingSeconds, 0.5, accuracy: 0.001)
+    }
+
+    func testLunchSettingsApplyFromEditAndDoNotRewriteHistoryOrResetDetection() {
+        let clock = TestMonitoringClock()
+        let model = AppModel(defaults: nil, clock: clock.read, deviceIsReady: { true }, calendar: calendar, startTimer: false)
+        var sequence: UInt16 = 0
+        func send(after seconds: TimeInterval = 0.25) {
+            clock.advance(seconds); sequence &+= 1
+            model.bluetooth.onFrame?(DistanceFrame.encode(sequence: sequence, uptime: UInt32(sequence) * 250,
+                                                          distance: 450, simulated: false))
+        }
+        for _ in 0..<20 { send() }
+        let previous = model.dailyHistory
+        let session = model.standingSeconds
+        model.lunchBreak.isEnabled = true
+        XCTAssertEqual(model.dailyHistory, previous)
+        XCTAssertEqual(model.posture, .standing)
+        for _ in 0..<20 { send() }
+        XCTAssertEqual(model.dailyHistory, previous)
+        XCTAssertEqual(model.standingSeconds, session)
+        clock.advance(0.125)
+        model.lunchBreak.isEnabled = false
+        send(after: 0.125)
+        XCTAssertEqual(model.todayRecord.standingSeconds, previous.records[model.todayRecord.day]!.standingSeconds + 0.125, accuracy: 0.001)
+        XCTAssertEqual(model.standingSeconds, session + 0.125, accuracy: 0.001)
+        XCTAssertEqual(model.posture, .standing)
+    }
+
+    func testLunchExcludesSittingAndConfigurationSurvivesRelaunch() throws {
+        let suite = "StandUpLunchTests-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let clock = TestMonitoringClock()
+        let storage = MemoryHistoryStorage()
+        let model = AppModel(defaults: defaults, historyStorage: storage, clock: clock.read,
+                             deviceIsReady: { true }, calendar: calendar, startTimer: false)
+        model.lunchBreak = LunchBreakSettings(isEnabled: true, startMinute: 715, endMinute: 795)
+        model.setActive(false)
+        for i in 1...20 {
+            clock.advance(0.25)
+            model.bluetooth.onFrame?(DistanceFrame.encode(sequence: UInt16(i), uptime: UInt32(i) * 250,
+                                                          distance: 100, simulated: false))
+        }
+        XCTAssertEqual(model.posture, .sitting)
+        XCTAssertEqual(model.todayRecord.sittingSeconds, 0)
+        XCTAssertEqual(model.sittingSeconds, 0)
+        let restored = AppModel(defaults: defaults, historyStorage: storage, clock: clock.read,
+                                deviceIsReady: { true }, calendar: calendar, startTimer: false)
+        XCTAssertEqual(restored.lunchBreak, model.lunchBreak)
+        XCTAssertTrue(restored.isOnLunchBreak)
+        XCTAssertEqual(restored.todayRecord.sittingSeconds, 0)
+    }
 }

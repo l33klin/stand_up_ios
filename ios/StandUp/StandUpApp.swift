@@ -11,6 +11,7 @@ final class StandUpAppDelegate: NSObject, UIApplicationDelegate {
         model.setActive(application.applicationState == .active)
         let identifiers = launchOptions?[.bluetoothCentrals] as? [String] ?? []
         model.bluetooth.restoreIfNeeded(identifiers: identifiers)
+        model.bluetooth.resumeMonitoring()
         return true
     }
 }

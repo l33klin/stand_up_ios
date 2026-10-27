@@ -20,6 +20,23 @@ struct SettingsView: View {
                         .font(.subheadline)
                 } header: { Text("每日目标") } footer: { Text("分次累计，养成每天站立办公的习惯。") }
 
+                Section {
+                    Toggle("午休暂停统计", isOn: $model.lunchBreak.isEnabled)
+                    if model.lunchBreak.isEnabled {
+                        DatePicker("开始时间", selection: lunchTime(\.startMinute), displayedComponents: .hourAndMinute)
+                        DatePicker("结束时间", selection: lunchTime(\.endMinute), displayedComponents: .hourAndMinute)
+                        if !model.lunchBreak.hasValidTimes {
+                            Text("开始与结束时间相同，当前不会暂停统计。请设置不同的时间。")
+                                .font(.caption).foregroundStyle(Theme.warning)
+                        } else if model.lunchBreak.crossesMidnight {
+                            Text("结束时间为次日。")
+                                .font(.caption).foregroundStyle(Theme.muted)
+                        }
+                    }
+                } header: { Text("午休") } footer: {
+                    Text("每天按手机当地时间暂停站立与坐姿统计，仍可查看实时距离。修改后生效，已保存的记录保持不变。")
+                }
+
                 Section("桌台高度") {
                     NavigationLink { DetectionSettingsView() } label: {
                         SettingsRow(title: "识别距离", symbol: "ruler", value: String(format: "%.1f cm", model.settings.thresholdMM / 10))
@@ -50,6 +67,17 @@ struct SettingsView: View {
             }
             .appForm().navigationTitle("设置")
         }
+    }
+
+    private func lunchTime(_ keyPath: WritableKeyPath<LunchBreakSettings, Int>) -> Binding<Date> {
+        Binding(get: {
+            let minute = model.lunchBreak[keyPath: keyPath]
+            return Calendar.autoupdatingCurrent.date(bySettingHour: minute / 60, minute: minute % 60,
+                                                      second: 0, of: Date()) ?? Date()
+        }, set: { date in
+            let parts = Calendar.autoupdatingCurrent.dateComponents([.hour, .minute], from: date)
+            model.lunchBreak[keyPath: keyPath] = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        })
     }
 }
 
@@ -127,15 +155,18 @@ struct MonitoringRulesView: View {
             Section("有效统计") {
                 Text("只有连接真实设备、收到连续有效测距且稳定识别后的时段才会累计。站立计入目标，坐姿单独保存。")
                 Text("手机演示与开发板模拟数据不会增加每日目标或历史时长。")
+                Text("启用午休设置后，每天指定时段内的站立与坐姿时长都不计入本次监测、每日目标和历史。实时测距与蓝牙连接继续工作；午休结束后，连续有效数据自动恢复累计。")
             }
             Section("锁屏使用") {
                 Text("连接后可以锁屏或切换 App，由蓝牙通知继续记录。后台接收受 iOS 调度影响。")
                 Text("断连、无效读数或超过 2 秒的数据空档不补算；恢复后重新等待稳定识别。意外断连会尝试重连同一设备。")
+                Text("已选择的设备会保存在本机。离开范围后等待系统自动重连，回到范围并恢复测距后继续记录；设备页可查看最近收到数据的时间。")
                 Text("设备页的“断开连接”会停止监测与重连。手动划掉 App 后需重新打开并检查连接。")
             }
             Section("数据与目标") {
                 Text("最近 30 个本地日历日（含今天）的记录保存在此设备，过期自动清理，没有监测的时间不补记。")
                 Text("修改目标影响今天及之后。历史日期保留当时的目标；清零本次监测不会删除每日记录。")
+                Text("午休设置保存在本机，修改后生效，不重新计算已保存的时长。午休开始时停止累计，结束时恢复；跨越边界的有效测量只计算午休以外的部分。")
             }
         }.font(.subheadline).appForm().navigationTitle("统计与锁屏").navigationBarTitleDisplayMode(.inline)
     }
