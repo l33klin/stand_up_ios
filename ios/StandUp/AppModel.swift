@@ -45,6 +45,7 @@ final class AppModel: ObservableObject {
             lastMeasurement = nil
             posture = .unknown
             distanceMM = nil
+            resetSittingReminder()
         }
     }
     @Published var lunchBreak: LunchBreakSettings {
@@ -54,8 +55,24 @@ final class AppModel: ObservableObject {
             if let data = try? JSONEncoder().encode(validated) { defaults?.set(data, forKey: "lunchBreak.v1") }
             // A setting change applies from now, without reinterpreting the previous sample interval.
             statisticsSettingsChangedAt = clock().uptime
+            resetSittingReminder()
         }
     }
+    @Published var reminderSettings: ReminderSettings {
+        didSet {
+            let validated = reminderSettings.validated()
+            if reminderSettings != validated { reminderSettings = validated }
+            if let data = try? JSONEncoder().encode(validated) { defaults?.set(data, forKey: "reminders.v1") }
+            if oldValue.sittingEnabled != validated.sittingEnabled || oldValue.sittingMinutes != validated.sittingMinutes {
+                resetSittingReminder()
+            }
+        }
+    }
+    @Published private(set) var reminderAuthorization: ReminderAuthorization = .unknown
+    @Published private(set) var requestingReminderAuthorization = false
+    @Published private(set) var reminderError: String?
+    @Published private(set) var continuousSittingSeconds: TimeInterval = 0
+    @Published private(set) var goalMilestoneEvent = 0
     @Published private(set) var posture: DeskPosture = .unknown
     @Published private(set) var distanceMM: Double?
     @Published private(set) var history: [DistancePoint] = []
@@ -90,6 +107,9 @@ final class AppModel: ObservableObject {
     private var historyDirty = false
     private var lastFrameWasSimulated: Bool?
     private var statisticsSettingsChangedAt: TimeInterval
+    private var reminderTracker = DeskReminderTracker()
+    private var goalReminderLedger: GoalReminderLedger
+    private let reminderDelivery: ReminderDelivering
 
     var todayRecord: DailyDeskRecord {
         let key = StandingHistory.dayKey(for: todayDate, calendar: calendar)
@@ -116,7 +136,8 @@ final class AppModel: ObservableObject {
 
     init(defaults: UserDefaults? = .standard, historyStorage: StandingHistoryStorage? = nil,
          clock: @escaping () -> MonitoringInstant = { .now }, deviceIsReady: (() -> Bool)? = nil,
-         calendar: Calendar = .autoupdatingCurrent, startTimer: Bool = true) {
+         calendar: Calendar = .autoupdatingCurrent, startTimer: Bool = true,
+         reminderDelivery: ReminderDelivering? = nil) {
         self.defaults = defaults
         let transport = BluetoothManager(defaults: defaults)
         bluetooth = transport
@@ -127,6 +148,13 @@ final class AppModel: ObservableObject {
         statisticsSettingsChangedAt = instant.uptime
         lastHistorySave = instant.uptime
         todayDate = instant.date
+        #if SWIFT_PACKAGE
+        self.reminderDelivery = reminderDelivery ?? NoopReminderDelivery()
+        #else
+        self.reminderDelivery = reminderDelivery ?? ReminderNotificationService()
+        #endif
+        goalReminderLedger = GoalReminderLedger.restore(from: defaults?.data(forKey: "goalReminders.v1"),
+                                                       on: instant.date, calendar: calendar)
         let storage = historyStorage ?? LocalStandingHistoryStorage(defaults: defaults)
         self.historyStorage = storage
         dailyHistory = StandingHistory.restore(from: storage.load(), on: instant.date, calendar: calendar)
@@ -135,6 +163,7 @@ final class AppModel: ObservableObject {
            let saved = try? JSONDecoder().decode(DetectionSettings.self, from: data) { settings = saved.validated() }
         else { settings = DetectionSettings() }
         lunchBreak = LunchBreakSettings.restore(from: defaults?.data(forKey: "lunchBreak.v1"))
+        reminderSettings = ReminderSettings.restore(from: defaults?.data(forKey: "reminders.v1"))
         bluetooth.onFrame = { [weak self] data in self?.receive(data) }
         bluetooth.onDisconnect = { [weak self] in self?.clearReading(message: "设备未连接，识别已暂停。") }
         subscription = bluetooth.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
@@ -145,6 +174,69 @@ final class AppModel: ObservableObject {
     }
 
     deinit { timer?.invalidate() }
+
+    func refreshReminderAuthorization() {
+        reminderDelivery.activate()
+        reminderDelivery.authorization { [weak self] status in self?.applyReminderAuthorization(status) }
+    }
+
+    private func applyReminderAuthorization(_ status: ReminderAuthorization) {
+        if reminderAuthorization != status { resetSittingReminder() }
+        reminderAuthorization = status
+    }
+
+    func requestReminderAuthorization() {
+        guard !requestingReminderAuthorization else { return }
+        requestingReminderAuthorization = true
+        reminderDelivery.requestAuthorization { [weak self] status, error in
+            guard let self else { return }
+            self.requestingReminderAuthorization = false
+            self.reminderError = error
+            self.applyReminderAuthorization(status)
+        }
+    }
+
+    func setSittingReminderEnabled(_ enabled: Bool) {
+        reminderSettings.sittingEnabled = enabled
+        if enabled, !reminderAuthorization.canNotify, reminderAuthorization != .denied { requestReminderAuthorization() }
+    }
+
+    func setGoalReminderEnabled(_ enabled: Bool) {
+        reminderSettings.goalEnabled = enabled
+        if enabled, !reminderAuthorization.canNotify, reminderAuthorization != .denied { requestReminderAuthorization() }
+    }
+
+    func sendTestReminder() {
+        guard reminderAuthorization.canNotify else { return }
+        deliverReminder(.test(id: UUID()))
+    }
+
+    private func resetSittingReminder() {
+        reminderTracker.resetSitting()
+        continuousSittingSeconds = 0
+    }
+
+    private func deliverReminder(_ notice: DeskNotice) {
+        reminderDelivery.deliver(notice) { [weak self] accepted in
+            self?.reminderError = accepted ? nil : "提醒未能提交，请检查系统通知权限。"
+        }
+    }
+
+    private func processGoalProgress(before: [String: DailyDeskRecord], keys: Set<String>, at instant: MonitoringInstant) {
+        let today = StandingHistory.dayKey(for: instant.date, calendar: calendar)
+        if let record = dailyHistory.records[today], record.milestone > (before[today]?.milestone ?? .starting) {
+            goalMilestoneEvent &+= 1
+        }
+        for key in keys.sorted() {
+            guard reminderSettings.goalEnabled, reminderAuthorization.canNotify,
+                  let record = dailyHistory.records[key], record.isComplete, before[key]?.isComplete != true,
+                  goalReminderLedger.reserve(day: key, on: instant.date, calendar: calendar) else { continue }
+            // Reserve before enqueueing: another BLE callback/relaunch must not duplicate this day's alert.
+            if let data = try? JSONEncoder().encode(goalReminderLedger) { defaults?.set(data, forKey: "goalReminders.v1") }
+            persistHistory(at: instant, force: true)
+            deliverReminder(.goal(day: key, minutes: record.goalMinutes))
+        }
+    }
 
     private func startUITimer() {
         guard timerEnabled, active, timer == nil else { return }
@@ -185,6 +277,7 @@ final class AppModel: ObservableObject {
         if value {
             startUITimer()
             if !isDemo { bluetooth.resumeMonitoring() }
+            refreshReminderAuthorization()
         }
         else {
             timer?.invalidate()
@@ -221,6 +314,7 @@ final class AppModel: ObservableObject {
         simulatedFirmware = false
         lastFrameWasSimulated = nil
         sawFrame = false
+        resetSittingReminder()
         sampleMessage = message
         persistHistory(at: instant, force: true)
     }
@@ -260,6 +354,7 @@ final class AppModel: ObservableObject {
         classifier.expire(at: now)
         posture = classifier.posture
         distanceMM = classifier.filteredMM
+        if posture == .unknown { resetSittingReminder() }
         if distanceMM == nil, sawFrame, !isDemo {
             // Invalid packets already carry a more specific explanation.
             if sampleMessage.hasPrefix("实时") || sampleMessage.hasPrefix("开发板模拟") {
@@ -289,7 +384,7 @@ final class AppModel: ObservableObject {
                 MeasurementContinuity.interval(previousUptime: $0.deviceUptime, uptime: frame.uptimeMilliseconds,
                                                previousReceipt: $0.receivedAt, receipt: now)
             }
-            if sourceChanged || interval == nil { classifier.reset() }
+            if sourceChanged || interval == nil { classifier.reset(); resetSittingReminder() }
             lastFrameWasSimulated = frame.isSimulated
             sawFrame = true
             simulatedFirmware = frame.isSimulated && !isDemo
@@ -297,6 +392,9 @@ final class AppModel: ObservableObject {
             posture = classifier.posture
             distanceMM = classifier.filteredMM
             lastMeasurement = (now, frame.uptimeMilliseconds)
+            if !frame.isValid || isDemo || frame.isSimulated || posture != .sitting || isOnLunchBreak {
+                resetSittingReminder()
+            }
             // Credit only an interval confirmed by consecutive valid measurements.
             // Timers, lock/unlock, reconnects and relaunches never backfill time.
             if !sourceChanged, let interval, previousPosture == posture, posture != .unknown {
@@ -305,10 +403,23 @@ final class AppModel: ObservableObject {
                                                        to: instant.date, calendar: calendar)
                 if posture == .standing { standingSeconds += counted }
                 if posture == .sitting { sittingSeconds += counted }
+                let keys = Set([StandingHistory.dayKey(for: instant.date.addingTimeInterval(-duration), calendar: calendar),
+                                StandingHistory.dayKey(for: instant.date, calendar: calendar)])
+                let before = dailyHistory.records.filter { keys.contains($0.key) }
                 if dailyHistory.credit(seconds: duration, endingAt: instant.date, posture: posture,
                                        connected: deviceIsReady(), simulated: isDemo || frame.isSimulated,
                                        lunchBreak: lunchBreak,
-                                       calendar: calendar) { historyDirty = true }
+                                       calendar: calendar) {
+                    historyDirty = true
+                    processGoalProgress(before: before, keys: keys, at: instant)
+                }
+                if !isDemo, !frame.isSimulated, posture == .sitting, !isOnLunchBreak {
+                    if counted + 0.000_001 < duration { resetSittingReminder() } // Ignore Date rounding; lunch breaks the bout.
+                    let notify = reminderTracker.recordSitting(seconds: counted, settings: reminderSettings,
+                                                              canNotify: reminderAuthorization.canNotify)
+                    continuousSittingSeconds = reminderTracker.sittingSeconds
+                    if notify { deliverReminder(.sitting(minutes: reminderSettings.sittingMinutes, id: UUID())) }
+                }
             }
             if frame.isValid {
                 history.append(DistancePoint(time: now, centimeters: Double(frame.distanceMillimeters) / 10))
@@ -321,6 +432,7 @@ final class AppModel: ObservableObject {
             }
         } catch {
             classifier.reset()
+            resetSittingReminder()
             lastMeasurement = nil
             posture = .unknown
             distanceMM = nil

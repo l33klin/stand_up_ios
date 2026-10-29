@@ -64,6 +64,7 @@ struct GoalRing: View {
     let record: DailyDeskRecord
     var diameter: CGFloat = 196
     @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 60
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -82,6 +83,15 @@ struct GoalRing: View {
             }.padding(24)
         }
         .frame(width: diameter, height: diameter)
+        .overlay(alignment: .topTrailing) {
+            if record.isComplete {
+                Image(systemName: "trophy.fill").font(.title3).foregroundStyle(Theme.stand)
+                    .padding(10).background(Theme.surface, in: Circle())
+                    .overlay { Circle().strokeBorder(Theme.rule, lineWidth: 1) }
+                    .accessibilityHidden(true)
+            }
+        }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: record.milestone)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("已站立 \(StandingDuration.text(record.standingSeconds))，目标 \(record.goalMinutes) 分钟，完成 \(Int(record.progress * 100))%")
     }

@@ -50,6 +50,9 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink { ReminderSettingsView() } label: {
+                        SettingsRow(title: "通知与提醒", symbol: "bell.badge", value: reminderStatus)
+                    }
                     NavigationLink { MonitoringRulesView() } label: {
                         SettingsRow(title: "统计与锁屏", symbol: "lock.iphone", value: "支持后台")
                     }
@@ -78,6 +81,64 @@ struct SettingsView: View {
             let parts = Calendar.autoupdatingCurrent.dateComponents([.hour, .minute], from: date)
             model.lunchBreak[keyPath: keyPath] = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
         })
+    }
+
+    private var reminderStatus: String {
+        guard model.reminderSettings.sittingEnabled || model.reminderSettings.goalEnabled else { return "未开启" }
+        return model.reminderAuthorization.canNotify ? "已开启" : "待允许通知"
+    }
+}
+
+struct ReminderSettingsView: View {
+    @EnvironmentObject private var model: AppModel
+    var body: some View {
+        Form {
+            Section {
+                LabeledContent("通知权限", value: permissionTitle)
+                if model.reminderAuthorization == .denied || model.reminderAuthorization == .quiet {
+                    Button("前往系统通知设置") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                    }
+                } else if !model.reminderAuthorization.canNotify {
+                    Button("允许通知") { model.requestReminderAuthorization() }
+                        .disabled(model.requestingReminderAuthorization)
+                }
+                if model.reminderAuthorization.canNotify {
+                    Button("发送测试通知") { model.sendTestReminder() }
+                }
+                if let error = model.reminderError { Text(error).font(.caption).foregroundStyle(Theme.warning) }
+            } footer: { Text("开启提醒时会请求系统许可。通知可能受专注模式、静音与系统设置影响。") }
+            Section {
+                Toggle("久坐提醒", isOn: Binding(get: { model.reminderSettings.sittingEnabled }, set: { model.setSittingReminderEnabled($0) }))
+                if model.reminderSettings.sittingEnabled {
+                    Stepper(value: $model.reminderSettings.sittingMinutes, in: ReminderSettings.sittingRange, step: 5) {
+                        LabeledContent("连续坐姿", value: "\(model.reminderSettings.sittingMinutes) 分钟")
+                    }
+                }
+            } header: { Text("起来休息一下") } footer: {
+                Text("按真实设备连续有效的坐姿记录计时，每段只提醒一次。站立、午休、断连或数据中断会重新计时；修改时长后也重新开始。")
+            }
+            Section {
+                Toggle("站立目标达成提醒", isOn: Binding(get: { model.reminderSettings.goalEnabled }, set: { model.setGoalReminderEnabled($0) }))
+            } header: { Text("为坚持喝彩") } footer: {
+                Text("真实站立累计达到每日目标时通知，每天最多一次。不补发开启前或修改目标产生的达标提醒。")
+            }
+            Section {
+                Text("锁屏时由蓝牙数据触发提醒，不依赖后台定时器。未收到有效数据就不会推算久坐；手机演示与开发板模拟数据不触发提醒。")
+                    .font(.subheadline).foregroundStyle(Theme.muted)
+            }
+        }.appForm().navigationTitle("通知与提醒").navigationBarTitleDisplayMode(.inline)
+            .task { model.refreshReminderAuthorization() }
+    }
+
+    private var permissionTitle: String {
+        switch model.reminderAuthorization {
+        case .unknown: return "检查中"
+        case .notDetermined: return "尚未允许"
+        case .denied: return "未允许，请在系统设置开启"
+        case .allowed: return "已允许"
+        case .quiet: return "已允许 · 静默投递"
+        }
     }
 }
 

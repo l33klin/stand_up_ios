@@ -55,6 +55,8 @@ struct DashboardView: View {
                 }.foregroundStyle(Theme.muted)
             }
             GoalRing(record: today).padding(.vertical, 8)
+            GoalMilestonesView(record: today)
+                .sensoryFeedback(.success, trigger: model.goalMilestoneEvent)
             VStack(spacing: 6) {
                 Text(today.isComplete ? "今日目标已完成" : "还差 \(Int(ceil(today.remainingSeconds / 60))) 分钟")
                     .font(.headline).foregroundStyle(today.isComplete ? Theme.stand : Theme.ink)
@@ -96,6 +98,10 @@ struct DashboardView: View {
             }
             if model.distanceMM == nil, model.bluetooth.isReady {
                 Text(model.sampleMessage).font(.caption).foregroundStyle(Theme.warning)
+            }
+            if model.reminderSettings.sittingEnabled, model.continuousSittingSeconds > 0 {
+                Text("连续坐姿 \(StandingDuration.text(model.continuousSittingSeconds)) · \(model.reminderAuthorization.canNotify ? "\(model.reminderSettings.sittingMinutes) 分钟提醒" : "通知未开启")")
+                    .font(.caption).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             }
         }.surface()
     }

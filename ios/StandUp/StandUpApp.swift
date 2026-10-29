@@ -9,6 +9,7 @@ final class StandUpAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         model.setActive(application.applicationState == .active)
+        model.refreshReminderAuthorization()
         let identifiers = launchOptions?[.bluetoothCentrals] as? [String] ?? []
         model.bluetooth.restoreIfNeeded(identifiers: identifiers)
         model.bluetooth.resumeMonitoring()

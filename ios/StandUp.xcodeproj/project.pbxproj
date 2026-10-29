@@ -22,6 +22,9 @@
 		946E4B25A39B8BD9245FDC16 /* StandUp/Views/HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA56FAAA43F11995E8ACC67C /* StandUp/Views/HistoryView.swift */; };
 		405D0A25A39A2573BBC04083 /* StandUp/Core/LunchBreakSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64158F149773CF1B2D66F739 /* StandUp/Core/LunchBreakSettings.swift */; };
 		83700CBC6EA66649F31ACF41 /* StandUp/Bluetooth/BluetoothMonitoringPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0110A11A1B3DB638B112717F /* StandUp/Bluetooth/BluetoothMonitoringPreference.swift */; };
+		C393A28CD4E7A726805C8FAD /* StandUp/Core/DeskReminders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F16A05F1DA5588CFEC62151 /* StandUp/Core/DeskReminders.swift */; };
+		3BDCD43663CFA2F302A1C281 /* StandUp/Notifications/ReminderNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CBC1F896799542FA3041763 /* StandUp/Notifications/ReminderNotifications.swift */; };
+		1752C3308B2584048A735109 /* StandUp/Views/GoalMilestonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B84C15CAE64C91D918695763 /* StandUp/Views/GoalMilestonesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +45,9 @@
 		FA56FAAA43F11995E8ACC67C /* StandUp/Views/HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/HistoryView.swift; sourceTree = "<group>"; };
 		64158F149773CF1B2D66F739 /* StandUp/Core/LunchBreakSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Core/LunchBreakSettings.swift; sourceTree = "<group>"; };
 		0110A11A1B3DB638B112717F /* StandUp/Bluetooth/BluetoothMonitoringPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Bluetooth/BluetoothMonitoringPreference.swift; sourceTree = "<group>"; };
+		0F16A05F1DA5588CFEC62151 /* StandUp/Core/DeskReminders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Core/DeskReminders.swift; sourceTree = "<group>"; };
+		9CBC1F896799542FA3041763 /* StandUp/Notifications/ReminderNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Notifications/ReminderNotifications.swift; sourceTree = "<group>"; };
+		B84C15CAE64C91D918695763 /* StandUp/Views/GoalMilestonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandUp/Views/GoalMilestonesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +64,9 @@
 		E50290A24C49A459B43487C5 = {
 			isa = PBXGroup;
 			children = (
+				B84C15CAE64C91D918695763 /* StandUp/Views/GoalMilestonesView.swift */,
+				9CBC1F896799542FA3041763 /* StandUp/Notifications/ReminderNotifications.swift */,
+				0F16A05F1DA5588CFEC62151 /* StandUp/Core/DeskReminders.swift */,
 				64158F149773CF1B2D66F739 /* StandUp/Core/LunchBreakSettings.swift */,
 				4C169D981D85E62759AF87CA /* StandUp/AppModel.swift */,
 				57181EF5172A0AB80B274E3C /* StandUp/Bluetooth/BluetoothManager.swift */,
@@ -161,6 +170,9 @@
 				7008FB0DB0FCCDACC4220EBF /* StandUp/Core/DistanceFrame.swift in Sources */,
 				946E4B25A39B8BD9245FDC16 /* StandUp/Views/HistoryView.swift in Sources */,
 				CD20CDF7302FB0BC62D09846 /* StandUp/Core/StandingHistory.swift in Sources */,
+				1752C3308B2584048A735109 /* StandUp/Views/GoalMilestonesView.swift in Sources */,
+				3BDCD43663CFA2F302A1C281 /* StandUp/Notifications/ReminderNotifications.swift in Sources */,
+				C393A28CD4E7A726805C8FAD /* StandUp/Core/DeskReminders.swift in Sources */,
 				405D0A25A39A2573BBC04083 /* StandUp/Core/LunchBreakSettings.swift in Sources */,
 				199FAD06DDB0B15040FF0C04 /* StandUp/Core/PostureClassifier.swift in Sources */,
 				894AC33F903083363EC015AD /* StandUp/StandUpApp.swift in Sources */,
